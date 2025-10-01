@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const { createClient } = require("supabase/supabase.js");
+const { createClient } = require("@supabase/supabase-js");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const path= require("path");
@@ -36,12 +36,12 @@ app.post("/login", async(req, res) => {
 
     if(error) return res.redirect(`/error.html?msg=${encodeURIComponent(error.message)}`);
 
-    res.cookie("access_tocken", data.session.access_tocken, { httpOnly: true });
+    res.cookie("access_token", data.session.access_tocken, { httpOnly: true });
     res.redirect("/private");
 });
 
 app.get("/private", async (req, res) => {
-    const token = req.cookies.access_tocken;
+    const token = req.cookie.access_token;
     if(!token) return res.redirect("/");
 
     const { data, error } = await supabase.auth.getUser(token);
@@ -59,6 +59,14 @@ app.get("/private", async (req, res) => {
         res.send(modifiedHtml);
     });
 });
+
+app.get("/logout", (req, res) => {
+    res.clearCookie("access_token");
+    res.redirect("/");
+});
+
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
 
 
 
