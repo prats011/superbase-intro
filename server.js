@@ -34,14 +34,14 @@ app.post("/login", async(req, res) => {
     const { email, password } = req.body;
     const {data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if(error) return res.redirect(`/error.html?msg=${encodeURIComponent(error.message)}`);
+    if(error || !data.session) return res.redirect(`/error.html?msg=${encodeURIComponent(error.message)}`);
 
-    res.cookie("access_token", data.session.access_tocken, { httpOnly: true });
+    res.cookie("access_token", data.session.access_token, { httpOnly: true });
     res.redirect("/private");
 });
 
 app.get("/private", async (req, res) => {
-    const token = req.cookie.access_token;
+    const token = req.cookies?.access_token;
     if(!token) return res.redirect("/");
 
     const { data, error } = await supabase.auth.getUser(token);
